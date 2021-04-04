@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>chatBot</title>
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <div class="container">
+    <ul id="chat" class="chat"></ul>
+    <div class="form">
+    <input type="text" id="input" class="input">
+    <button id="btn" class="btn">ボタン</button>
+    </div>
+  </div>
+  
+<script>
+  class Chat {
+    constructor() {
+      this.messages = [];
+    }
+
+    addMessage(message) {
+      this.messages.push(message);
+    }
+
+    getMessages() {
+      return this.messages;
+    }
+  }
+
+  class Input {
+    constructor() {
+      this.text = ''
+    }
+    
+    addText(text) {
+      this.text = text
+    }
+
+    getText() {
+      return this.text;
+    }
+  }
+
+  class Bot {
+    constructor() {
+      this.messages = {
+        openMessage: ['こんにちわ','これから始めます'],
+        response:{
+          first: ['わかりました。\n頑張りましょう。','はい、応援します！','応援３'],
+          second: ['励まし１','励まし2','励まし3'],
+          third: ['時刻１','時刻２','時刻３'],
+        }
+      }
+    }
+
+    getFirstText() {
+      console.log(this)
+      return this.messages.openMessage[0]
+    }
+    getSecondText() {
+      return this.messages.openMessage[1]
+    }
+    getResponseText(pattern) {
+      const maxNum = 3
+      const index = Math.floor( Math.random() * maxNum)
+
+      if(pattern === 'first') return this.messages.response.first[index]
+      if(pattern === 'second') return this.messages.response.second[index]
+      if(pattern === 'third') return this.messages.response.third[index]
+    }
+  }
+
+  const chat = new Chat()
+  const bot = new Bot()
+  const input = new Input()
+
+  const chatArea = document.getElementById('chat')
+  const inputArea = document.getElementById('input')
+  const btn = document.getElementById('btn')
+
+  const msgObj = {
+    id: chat.getMessages().length,
+    text: '', 
+    person: 'human'
+  }
+  const botObj = { 
+    id: chat.getMessages().length,
+    text: '', 
+    person: 'bot'
+  }
+
+  const pattern = [/禁煙開始/, /辞めたい/, /時間/]
+  /////////////////////////////////
+  //////////  イベント  /////////////
+  /////////////////////////////////
+  window.addEventListener('load', function() {
+    let text = ''
+
+    setTimeout(function(){
+      text = bot.getFirstText()
+      addBotText({...botObj},text)
+    }, 1000)
+
+    setTimeout(function(){
+      text = bot.getSecondText()
+      addBotText({...botObj},text)
+    }, 2000)
+  })
+
+  inputArea.addEventListener('input', function(e) {
+    input.addText(e.target.value);
+  })
+
+  btn.addEventListener('click', function() {
+    const inputText = input.getText()
+    if(!inputText) return
+
+    const responseData = getResponsePattern(inputText,pattern)
+    const newMsgObj = {...msgObj}
+    newMsgObj.text = inputText
+
+    chat.addMessage(newMsgObj);
+    
+    inputArea.value = ''
+
+    rendor()
+
+    setTimeout(function(){
+      const botText = bot.getResponseText(responseData)
+      addBotText({...botObj}, botText)
+    }, 1000)
+  })
+
+  ///////////////////////////////
+  //////////  関数  /////////////
+  ///////////////////////////////
+  function rendor() {
+    let chats = chat.getMessages();
+
+    if(chats.length === 0) return
+
+    chatArea.innerHTML = ''
+
+    chats.forEach(function(elm) {
+      const element = document.createElement("li")
+      const listStyle = (elm.person === 'human') ? 'chat-item--left' : 'chat-item--right'
+      
+      element.innerText = elm.text;
+      element.classList.add('chat-item', listStyle)
+
+      chatArea.appendChild(element);
+    })
+  }
+  
+  function addBotText(obj, text) {
+    obj.text = text
+    
+    chat.addMessage(obj)
+
+    rendor()
+  }
+
+  function getResponsePattern(inputText, pattern) {
+    const keyword = pattern.find(keyword => inputText.match(keyword))
+    const arrayMatch = inputText.match(keyword)
+
+    let data = ''
+    switch(arrayMatch[0]){
+      case '禁煙開始':
+        data = 'first'
+        break
+      case '辞めたい':
+        data =  'second'
+        break
+      case '時間':
+        data = 'third'
+        break
+      default:
+        break
+    }
+    return data
+  }
+</script>
+</body>
+</html>
