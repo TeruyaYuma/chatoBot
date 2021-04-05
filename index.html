@@ -9,10 +9,11 @@
 </head>
 <body>
   <div class="container">
+    <h1 class="title">禁煙くん</h1>
     <ul id="chat" class="chat"></ul>
     <div class="form">
-    <input type="text" id="input" class="input">
-    <button id="btn" class="btn">ボタン</button>
+      <input type="text" id="input" class="input">
+      <button id="btn" class="btn">ボタン</button>
     </div>
   </div>
   
@@ -58,7 +59,6 @@
     }
 
     getFirstText() {
-      console.log(this)
       return this.messages.openMessage[0]
     }
     getSecondText() {
@@ -85,7 +85,7 @@
   const msgObj = {
     id: chat.getMessages().length,
     text: '', 
-    person: 'human'
+    person: 'user'
   }
   const botObj = { 
     id: chat.getMessages().length,
@@ -104,6 +104,7 @@
       text = bot.getFirstText()
       addBotText({...botObj},text)
     }, 1000)
+
 
     setTimeout(function(){
       text = bot.getSecondText()
@@ -146,20 +147,35 @@
     chatArea.innerHTML = ''
 
     chats.forEach(function(elm) {
-      const element = document.createElement("li")
-      const listStyle = (elm.person === 'human') ? 'chat-item--left' : 'chat-item--right'
-      
-      element.innerText = elm.text;
-      element.classList.add('chat-item', listStyle)
+      const elementContainer = document.createElement("li")
+      const elementName = document.createElement("div")
+      const elementText = document.createElement("p")
 
-      chatArea.appendChild(element);
+      const chatListStyle = (elm.person === 'user') ? 'chat-item--left' : 'chat-item--right'
+      const nameListStyle = (elm.person === 'user') ? 'chat-item__name--left' : 'chat-item__name--right'
+      const textListStyle = (elm.person === 'user') ? 'chat-item__text--left' : 'chat-item__text--right'
+
+      elementContainer.classList.add('chat-item', chatListStyle)
+
+      elementName.classList.add(nameListStyle)
+      elementName.innerText = elm.person
+
+      elementText.classList.add('chat-item__text', textListStyle)
+      elementText.innerText = elm.text;
+      
+
+      elementContainer.appendChild(elementName)
+      elementContainer.appendChild(elementText)
+
+      chatArea.appendChild(elementContainer);
     })
   }
   
   function addBotText(obj, text) {
-    obj.text = text
-    
-    chat.addMessage(obj)
+
+      obj.text = text
+
+      chat.addMessage(obj)
 
     rendor()
   }
