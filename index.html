@@ -18,188 +18,240 @@
   </div>
   
 <script>
-  class Chat {
-    constructor() {
-      this.messages = [];
-    }
-
-    addMessage(message) {
-      this.messages.push(message);
-    }
-
-    getMessages() {
-      return this.messages;
-    }
+/////////////////////////////////
+//////////  クラス  /////////////
+/////////////////////////////////
+class Chat {
+  constructor() {
+    this.messages = []
   }
 
-  class Input {
-    constructor() {
-      this.text = ''
-    }
-    
-    addText(text) {
-      this.text = text
-    }
-
-    getText() {
-      return this.text;
-    }
+  addMessage(message) {
+    this.messages.push(message)
   }
 
-  class Bot {
-    constructor() {
-      this.messages = {
-        openMessage: ['こんにちわ','これから始めます'],
-        response:{
-          first: ['わかりました。\n頑張りましょう。','はい、応援します！','応援３'],
-          second: ['励まし１','励まし2','励まし3'],
-          third: ['時刻１','時刻２','時刻３'],
-        }
-      }
-    }
-
-    getFirstText() {
-      return this.messages.openMessage[0]
-    }
-    getSecondText() {
-      return this.messages.openMessage[1]
-    }
-    getResponseText(pattern) {
-      const maxNum = 3
-      const index = Math.floor( Math.random() * maxNum)
-
-      if(pattern === 'first') return this.messages.response.first[index]
-      if(pattern === 'second') return this.messages.response.second[index]
-      if(pattern === 'third') return this.messages.response.third[index]
-    }
+  getMessages() {
+    return this.messages
   }
+}
 
-  const chat = new Chat()
-  const bot = new Bot()
-  const input = new Input()
-
-  const chatArea = document.getElementById('chat')
-  const inputArea = document.getElementById('input')
-  const btn = document.getElementById('btn')
-
-  const msgObj = {
-    id: chat.getMessages().length,
-    text: '', 
-    person: 'user'
-  }
-  const botObj = { 
-    id: chat.getMessages().length,
-    text: '', 
-    person: 'bot'
-  }
-
-  const pattern = [/禁煙開始/, /辞めたい/, /時間/]
-  /////////////////////////////////
-  //////////  イベント  /////////////
-  /////////////////////////////////
-  window.addEventListener('load', function() {
-    let text = ''
-
-    setTimeout(function(){
-      text = bot.getFirstText()
-      addBotText({...botObj},text)
-    }, 1000)
-
-
-    setTimeout(function(){
-      text = bot.getSecondText()
-      addBotText({...botObj},text)
-    }, 2000)
-  })
-
-  inputArea.addEventListener('input', function(e) {
-    input.addText(e.target.value);
-  })
-
-  btn.addEventListener('click', function() {
-    const inputText = input.getText()
-    if(!inputText) return
-
-    const responseData = getResponsePattern(inputText,pattern)
-    const newMsgObj = {...msgObj}
-    newMsgObj.text = inputText
-
-    chat.addMessage(newMsgObj);
-    
-    inputArea.value = ''
-
-    rendor()
-
-    setTimeout(function(){
-      const botText = bot.getResponseText(responseData)
-      addBotText({...botObj}, botText)
-    }, 1000)
-  })
-
-  ///////////////////////////////
-  //////////  関数  /////////////
-  ///////////////////////////////
-  function rendor() {
-    let chats = chat.getMessages();
-
-    if(chats.length === 0) return
-
-    chatArea.innerHTML = ''
-
-    chats.forEach(function(elm) {
-      const elementContainer = document.createElement("li")
-      const elementName = document.createElement("div")
-      const elementText = document.createElement("p")
-
-      const chatListStyle = (elm.person === 'user') ? 'chat-item--left' : 'chat-item--right'
-      const nameListStyle = (elm.person === 'user') ? 'chat-item__name--left' : 'chat-item__name--right'
-      const textListStyle = (elm.person === 'user') ? 'chat-item__text--left' : 'chat-item__text--right'
-
-      elementContainer.classList.add('chat-item', chatListStyle)
-
-      elementName.classList.add(nameListStyle)
-      elementName.innerText = elm.person
-
-      elementText.classList.add('chat-item__text', textListStyle)
-      elementText.innerText = elm.text;
-      
-
-      elementContainer.appendChild(elementName)
-      elementContainer.appendChild(elementText)
-
-      chatArea.appendChild(elementContainer);
-    })
+class Input {
+  constructor() {
+    this.text = ''
   }
   
-  function addBotText(obj, text) {
-
-      obj.text = text
-
-      chat.addMessage(obj)
-
-    rendor()
+  addText(text) {
+    this.text = text
   }
 
-  function getResponsePattern(inputText, pattern) {
-    const keyword = pattern.find(keyword => inputText.match(keyword))
-    const arrayMatch = inputText.match(keyword)
+  getText() {
+    return this.text;
+  }
+}
 
-    let data = ''
-    switch(arrayMatch[0]){
-      case '禁煙開始':
-        data = 'first'
-        break
-      case '辞めたい':
-        data =  'second'
-        break
-      case '時間':
-        data = 'third'
-        break
-      default:
-        break
+class Bot {
+  constructor() {
+    this.messages = {
+      openMessage: ['こんにちわ',
+                    '禁煙お助けBotの禁煙くんです。\n' + 
+                    '\n' +
+                    '禁煙を始める時は『禁煙開始』を入力してください。\n' +
+                    '挫けそうになったら『辞めたい』を入力してくだい。\n' +
+                    '経過時刻を知りたくなったら『時間』を入力してください。'],
+      response:{
+        first: ['わかりました。\n頑張りましょう。','はい、応援します！','応援３'],
+        second: ['励まし１','励まし2','励まし3'],
+        third: ['時刻１','時刻２','時刻３'],
+        other: ['その他１','その他２','その他３','その他4','その他5',]
+      }
     }
-    return data
+    this.pattern = [/禁煙開始/, /辞めたい/, /時間/]
   }
+
+  getOpenMessage() {
+    return this.messages.openMessage
+  }
+
+  getFirstResponse() {
+    const index = this.randomNum(3)
+
+    return this.messages.response.first[index] 
+  }
+  getSecondResponse() {
+    const index = this.randomNum(3)
+
+    return this.messages.response.second[index]
+  }
+  getThirdResponse() {
+    const index = this.randomNum(3)
+
+    return this.messages.response.third[index]
+  }
+  getOtherResponse() {
+    const index = this.randomNum(5)
+
+    return this.messages.response.other[index]
+  }
+
+  randomNum(maxNum) {
+    return Math.floor( Math.random() * maxNum)
+  }
+
+  getPattern() {
+    return this.pattern
+  }
+}
+
+/////////////////////////////////
+//////////  定数  /////////////
+/////////////////////////////////
+const chatArea = document.getElementById('chat')
+const inputArea = document.getElementById('input')
+const btn = document.getElementById('btn')
+// userメッセージオブジェクトのテンプレート
+const msgObj = {
+  id: null,
+  text: '', 
+  person: 'user'
+}
+// botメッセージオブジェクトのテンプレート
+const botObj = { 
+  id: null,
+  text: '', 
+  person: 'bot'
+}
+
+const chat = new Chat()
+const bot = new Bot()
+const input = new Input()
+
+/////////////////////////////////
+//////////  イベント  /////////////
+/////////////////////////////////
+window.addEventListener('load', function() {
+  // 1秒毎にbotMessageを表示
+  delay(1000)
+    .then(() => {
+      id = chat.getMessages().length
+      text = bot.getOpenMessage()[0]
+      newObj = {...botObj}
+
+      addObj(id, text, newObj)
+    })
+
+    .then(() => delay(1000))
+    .then(() => {
+      id = chat.getMessages().length
+      text = bot.getOpenMessage()[1]
+      newObj = {...botObj}
+
+      addObj(id, text, newObj)
+    })
+})
+
+inputArea.addEventListener('input', function(e) {
+  
+  input.addText(e.target.value);
+
+})
+
+btn.addEventListener('click', function() {
+  const inputText = input.getText()
+  if(!inputText) return
+
+  const id = chat.getMessages().length
+  const pattern = bot.getPattern()
+  // Botクラスの持つ特定の文字列とパターン一致したbot.messagesを返す
+  const patternData = getResponsePattern(inputText, pattern)
+  let newObj
+
+  inputArea.value = ''
+
+  newObj = {...msgObj}
+  addObj(id, inputText, newObj)
+
+  delay(1000)
+    .then(() => {
+      const id = chat.getMessages().length
+      newObj = {...botObj}
+      addObj(id, patternData, newObj)
+    })
+})
+
+///////////////////////////////
+//////////  関数  /////////////
+///////////////////////////////
+function rendor() {
+  const chats = chat.getMessages();
+  if(chats.length === 0) return
+
+  chatArea.innerHTML = ''
+
+  chats.forEach(function(elm) {
+    const elementContainer = document.createElement("li")
+    const elementName = document.createElement("div")
+    const elementText = document.createElement("p")
+
+    const chatListStyle = (elm.person === 'user') ? 'chat-item--left' : 'chat-item--right'
+    const nameListStyle = (elm.person === 'user') ? 'chat-item__name--left' : 'chat-item__name--right'
+    const textListStyle = (elm.person === 'user') ? 'chat-item__text--left' : 'chat-item__text--right'
+
+    elementContainer.classList.add('chat-item', chatListStyle)
+
+    elementName.classList.add(nameListStyle)
+    elementName.innerText = elm.person
+
+    elementText.classList.add('chat-item__text', textListStyle)
+    elementText.innerText = elm.text;
+    
+
+    elementContainer.appendChild(elementName)
+    elementContainer.appendChild(elementText)
+
+    chatArea.appendChild(elementContainer)
+  })
+
+  chatArea.scrollTop = chatArea.scrollHeight
+}
+
+function addObj(id, text, newObj) {
+  newObj.id = id
+  newObj.text = text
+
+  chat.addMessage(newObj)
+
+  rendor()
+}
+
+function getResponsePattern(inputText, pattern) {
+  const keyword = pattern.find(keyword => inputText.match(keyword))
+  const arrayMatch = inputText.match(keyword)
+  let data = ''
+
+  switch(arrayMatch[0]){
+    case '禁煙開始':
+      data = bot.getFirstResponse()
+      break
+    
+    case '辞めたい':
+      data =  bot.getSecondResponse()
+      break
+    
+    case '時間':
+      data = bot.getThirdResponse()
+      break
+
+    default:
+      data = bot.getOtherResponse()
+      break
+  }
+
+  return data
+}
+
+function delay(ms) {
+  return new Promise( resolve => setTimeout(resolve, ms))
+}
 </script>
 </body>
 </html>
